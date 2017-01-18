@@ -171,7 +171,7 @@ console.log(rentals);
 console.log(actors);
 console.log(rentalModifications);*/
 
-
+//To know how many days was the rent
 function DateDiff(pickup,back)
 {
 
@@ -196,11 +196,16 @@ function DateDiff(pickup,back)
 
 // EXERCICE 1 & 2
 
+// To know how much does a rental cost , with the details
+// of the commissoin
 function Price(rental)
 {
-  var car;
-  var priceperday;
+  let car,
+      priceperday;
 
+  // Because we need to access to some value of cars
+  // and Cars is not the parameter
+  // we match the id of rentals with the id of cars
   for(var i=0;i<cars.length;i++)
   {
     if(cars[i].id == rental.carId)
@@ -209,9 +214,9 @@ function Price(rental)
     }
   }
 
-  var pickup = new Date(rental.pickupDate);
-  var back = new Date(rental.returnDate);
-  var diffdate = DateDiff(pickup,back);
+  let pickup = new Date(rental.pickupDate),
+      back = new Date(rental.returnDate),
+      diffdate = DateDiff(pickup,back);
 
   if(diffdate == 1)
   {
@@ -225,8 +230,9 @@ function Price(rental)
   {
     priceperday = car.pricePerDay * 0.5;
   }
-  var time = diffdate * car.pricePerDay;
-  var distance = rental.distance * car.pricePerKm;
+
+  let time = diffdate * car.pricePerDay,
+      distance = rental.distance * car.pricePerKm;
   rental.price = time + distance;
 
   return rental.price;
@@ -234,18 +240,23 @@ function Price(rental)
 
 // EXERCICE 3
 
-var insurance;
-var assistance;
-var drivy;
-var commission;
+// Using Global variables
+// Because we can't return more than 1 variable in a function
+// I use them in my fct , fix value so i can display them
+// at the end of the code in my for loop
+var insurance,
+    assistance,
+    drivy,
+    commission;
 
 function Commission(rental)
 {
-  var pickup = new Date(rental.pickupDate);
-  var back = new Date(rental.returnDate);
-  var nbofdays = DateDiff(pickup,back);
-  var price = DeductiblePrice(rental);
-  var commission = price * (0.3);
+  let pickup = new Date(rental.pickupDate),
+      back = new Date(rental.returnDate),
+      nbofdays = DateDiff(pickup,back),
+      price = DeductiblePrice(rental),
+      commission = price * (0.3);
+
   rental.commission.insurance = commission / 2;
   insurance = rental.commission.insurance;
   rental.commission.assistance = nbofdays;
@@ -253,25 +264,26 @@ function Commission(rental)
   rental.commission.drivy = commission
                             - rental.commission.insurance
                             - rental.commission.assistance;
-  drivy = rental.commission.drivy ;
+  drivy = rental.commission.drivy;
+
   return commission;
 
 }
 
 // EXERCICE 4
 
+// The function Price is not the real final price because
+// it missing the deductible reduction
 function DeductiblePrice(rental)
 {
-  var pickup = new Date(rental.pickupDate);
-  var back = new Date(rental.returnDate);
-  var nbofdays = DateDiff(pickup, back);
+  let pickup = new Date(rental.pickupDate),
+      back = new Date(rental.returnDate),
+      nbofdays = DateDiff(pickup, back);
 
   if(rental.options.PriceReduction == true)
   {
     rental.price = Price(rental) + nbofdays * 4;
-  }
-  else
-  {
+  } else {
     rental.price = Price(rental);
   }
 
@@ -280,6 +292,9 @@ function DeductiblePrice(rental)
 }
 
 // EXERCICE 5
+
+// To know who , after a rent,who earn or paid and which
+// amount and the details of the transaction
 function Payment(actor)
 {
   for(var i=0;i<rentals.length;i++)
@@ -331,10 +346,10 @@ for(var i=0; i < rentals.length; i++)
 {
   var comm = Commission(rentals[i]);
   var finalPrice = DeductiblePrice(rentals[i]);
-  console.log("Prix de location "+i+" : "+finalPrice+" euros \n"+
+  console.log("Price of the location "+i+" : "+finalPrice+" euros \n"+
               "Commission : "+comm+" euros \n"+
               "Dtails : \n"+
-              "- Assurance : "+insurance+" euros \n"+
+              "- Insurancece : "+insurance+" euros \n"+
               "- Assistance : "+assistance+" euros \n"+
               "- Drivy : "+drivy+" euros" );
 }
@@ -343,7 +358,6 @@ for(var i=0; i < rentals.length; i++)
 // (EXERCIE 5)
 for(var j=0; j< actors.length; j++)
 {
-
   for(var i=0;i<actors[j].payment.length; i++)
   {
     Payment(actors[j]);
