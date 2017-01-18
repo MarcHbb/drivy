@@ -22,6 +22,7 @@ var cars = [{
 //The `price` is updated from exercice 1
 //The `commission` is updated from exercice 3
 //The `options` is useful from exercice 4
+
 var rentals = [{
   'id': '1-pb-92',
   'driver': {
@@ -33,7 +34,7 @@ var rentals = [{
   'returnDate': '2016-01-02',
   'distance': 100,
   'options': {
-    'deductibleReduction': false
+    'PriceReduction': false
   },
   'price': 0,
   'commission': {
@@ -52,7 +53,7 @@ var rentals = [{
   'returnDate': '2016-01-09',
   'distance': 300,
   'options': {
-    'deductibleReduction': true
+    'PriceReduction': true
   },
   'price': 0,
   'commission': {
@@ -71,7 +72,7 @@ var rentals = [{
   'returnDate': '2015-12-15',
   'distance': 1000,
   'options': {
-    'deductibleReduction': true
+    'PriceReduction': true
   },
   'price': 0,
   'commission': {
@@ -165,38 +166,41 @@ var rentalModifications = [{
   'pickupDate': '2015-12-05'
 }];
 
-console.log(cars);
+/*console.log(cars);
 console.log(rentals);
 console.log(actors);
-console.log(rentalModifications);
+console.log(rentalModifications);*/
 
-// EXERCICE 1 & 2
 
-function dateDiff(date1, date2)
+function DateDiff(pickup,back)
 {
-    var diff= {}
-    var tmp = date2 - date1;
 
-    tmp = Math.floor(tmp/1000);             // Nombre de secondes entre les 2 dates
+  var diff= {}
+  var tmp = back - pickup;
+
+  tmp = Math.floor(tmp/1000);             // Nombre de secondes entre les 2 dates
     diff.sec = tmp % 60;                    // Extraction du nombre de secondes
 
-    tmp = Math.floor((tmp-diff.sec)/60);    // Nombre de minutes (partie entière)
-    diff.min = tmp % 60;                    // Extraction du nombre de minutes
+  tmp = Math.floor((tmp-diff.sec)/60);    // Nombre de minutes (partie entière)
+  diff.min = tmp % 60;                    // Extraction du nombre de minutes
 
-    tmp = Math.floor((tmp-diff.min)/60);    // Nombre d'heures (entières)
-    diff.hour = tmp % 24;                   // Extraction du nombre d'heures
+  tmp = Math.floor((tmp-diff.min)/60);    // Nombre d'heures (entières)
+  diff.hour = tmp % 24;                   // Extraction du nombre d'heures
 
-    tmp = Math.floor((tmp-diff.hour)/24);   // Nombre de jours restants
-    diff.day = tmp;
+  tmp = Math.floor((tmp-diff.hour)/24);   // Nombre de jours restants
+  diff.day = tmp;
 
-    return diff.day+1;
+  return diff.day+1;
 
 }
 
-function RentalPrice(rental)
+// EXERCICE 1 & 2
+
+function Price(rental)
 {
   var car;
   var priceperday;
+
   for(var i=0;i<cars.length;i++)
   {
     if(cars[i].id == rental.carId)
@@ -207,61 +211,157 @@ function RentalPrice(rental)
 
   var pickup = new Date(rental.pickupDate);
   var back = new Date(rental.returnDate);
-  var diffdate = dateDiff(pickup,back);
+  var diffdate = DateDiff(pickup,back);
 
   if(diffdate == 1)
   {
-    priceperday = car.pricePerDay*0.1;
+    priceperday = car.pricePerDay * ( 1 - 0.1 );
   }
   else if (diffdate > 4)
   {
-    priceperday = car.pricePerDay*0.3;
+    priceperday = car.pricePerDay * ( 1 - 0.3 );
   }
   else if(diffdate > 10)
   {
-    priceperday = car.pricePerDay*0.5;
+    priceperday = car.pricePerDay * 0.5;
   }
   var time = diffdate * car.pricePerDay;
   var distance = rental.distance * car.pricePerKm;
-  var rental_price = time + distance;
+  rental.price = time + distance;
 
-  return rental_price;
+  return rental.price;
 }
+
+// EXERCICE 3
+
+var insurance;
+var assistance;
+var drivy;
+var commission;
 
 function Commission(rental)
 {
   var pickup = new Date(rental.pickupDate);
   var back = new Date(rental.returnDate);
-  var nbofdays = dateDiff(pickup,back);
-
-  var price = RentalPrice(rental);
-  var commission = price * 0.3;
-  var assistance = nbofdays;
-  var insurance = commission / 2;
-  var drivy = commission - nbofdays;
-
-  var total = 'Commission : '+commission+' euros \
-              Assistance : '+assistance+' euros \
-              Insurance : '+insurance+' euros \
-              Drivy : '+drivy+' euros';
-
-  return total;
+  var nbofdays = DateDiff(pickup,back);
+  var price = DeductiblePrice(rental);
+  var commission = price * (0.3);
+  rental.commission.insurance = commission / 2;
+  insurance = rental.commission.insurance;
+  rental.commission.assistance = nbofdays;
+  assistance = nbofdays;
+  rental.commission.drivy = commission
+                            - rental.commission.insurance
+                            - rental.commission.assistance;
+  drivy = rental.commission.drivy ;
+  return commission;
 
 }
 
+// EXERCICE 4
 
-for(var i=0;i<rentals.length;i++)
+function DeductiblePrice(rental)
 {
-  var price = RentalPrice(rentals[i]);
-  var comm = Commission(rentals[i]);
-  console.log("The price for the "+(i+1)+"th rental " +
-              " is "+price+" euros. Details : \
-              "+comm);
+  var pickup = new Date(rental.pickupDate);
+  var back = new Date(rental.returnDate);
+  var nbofdays = DateDiff(pickup, back);
+
+  if(rental.options.PriceReduction == true)
+  {
+    rental.price = Price(rental) + nbofdays * 4;
+  }
+  else
+  {
+    rental.price = Price(rental);
+  }
+
+  return rental.price;
+
 }
 
+// EXERCICE 5
+function Payment(actor)
+{
+  for(var i=0;i<rentals.length;i++)
+  {
+    var rental;
+    if(rentals[i].id == actor.rentalId)
+    {
+    rental = rentals[i];
+    }
+  }
+
+  for(var i = 0; i<actor.payment.length; i++)
+  {
+    if(actor.payment[i].who == "driver")
+    {
+      actor.payment[i].amount = DeductiblePrice(rental);
+    }
+
+    else if(actor.payment[i].who == "owner")
+    {
+      actor.payment[i].amount = DeductiblePrice(rental)
+                                - Commission(rental);
+    }
+
+    else if(actor.payment[i].who == "insurance")
+    {
+      actor.payment[i].amount = insurance;
+    }
+
+    else if(actor.payment[i].who == "assistance")
+    {
+      actor.payment[i].amount = assistance;
+    }
+
+    else if(actor.payment[i].who == "drivy")
+    {
+      actor.payment[i].amount = drivy;
+    }
+
+  }
 
 
+  return actor.payment;
+}
 
+// Display the rental price and the details ( commission ...)
+// (EXERCICE 1 to 4)
+for(var i=0; i < rentals.length; i++)
+{
+  var comm = Commission(rentals[i]);
+  var finalPrice = DeductiblePrice(rentals[i]);
+  console.log("Prix de location "+i+" : "+finalPrice+" euros \n"+
+              "Commission : "+comm+" euros \n"+
+              "Dtails : \n"+
+              "- Assurance : "+insurance+" euros \n"+
+              "- Assistance : "+assistance+" euros \n"+
+              "- Drivy : "+drivy+" euros" );
+}
 
+// Display which amount everyone has to pay or recieve
+// (EXERCIE 5)
+for(var j=0; j< actors.length; j++)
+{
 
-/**/
+  for(var i=0;i<actors[j].payment.length; i++)
+  {
+    Payment(actors[j]);
+    var who = actors[j].payment[i].who;
+    var type = actors[j].payment[i].type
+    var amount = actors[j].payment[i].amount
+    var comm = actors[j].payment[2].amount
+              + actors[j].payment[3].amount
+              + actors[j].payment[4].amount ;
+    if (type == "debit")
+    {
+      type = "-";
+    }
+    else {
+      type = "+";
+    }
+
+    console.log(who+" : "+type+" "+amount+" euros ");
+  }
+  console.log("\n");
+}
